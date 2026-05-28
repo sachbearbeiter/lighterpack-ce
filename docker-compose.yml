@@ -1,0 +1,43 @@
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: lighterpack
+      MARIADB_USER: lighterpack
+      MARIADB_PASSWORD: lighterpack
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_0900_ai_ci
+      --transaction-isolation=READ-COMMITTED
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: lighterpack
+      DB_PASSWORD: lighterpack
+      DB_NAME: lighterpack
+      ORIGIN: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
