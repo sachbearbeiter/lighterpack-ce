@@ -1,0 +1,28 @@
+{
+  "name": "@lighterpack-ce/importer",
+  "version": "0.1.0",
+  "description": "One-time CLI to migrate a lighterpack MongoDB dump into lighterpack-ce MariaDB",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "lighterpack-import": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "inspect": "tsx src/cli.ts inspect",
+    "dry-run": "tsx src/cli.ts dry-run",
+    "run-import": "tsx src/cli.ts run"
+  },
+  "dependencies": {
+    "bson": "^6.10.0",
+    "drizzle-orm": "^0.45.2",
+    "mysql2": "^3.11.0",
+    "uuidv7": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
