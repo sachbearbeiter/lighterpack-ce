@@ -7,3 +7,6 @@ dist/
 !.env.example
 drizzle/
 *.local
+
+# local CSV files
+*.csv
