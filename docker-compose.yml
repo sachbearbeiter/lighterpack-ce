@@ -1,7 +1,7 @@
 services:
   db:
     image: mariadb:11
-    restart: unless-stopped
+    restart: "no"
     environment:
       MARIADB_ROOT_PASSWORD: root
       MARIADB_DATABASE: lighterpack
@@ -25,7 +25,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-    restart: unless-stopped
+    restart: "no"
     ports:
       - "3000:3000"
     environment:
