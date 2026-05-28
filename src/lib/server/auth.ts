@@ -1,10 +1,10 @@
 import { hash, verify } from '@node-rs/argon2';
-import { uuidv7 } from 'uuidv7';
 import { eq } from 'drizzle-orm';
 import { createHash } from 'node:crypto';
 import { db } from '$lib/server/db/client.js';
 import { users, sessions, passwordResets, libraries } from '$lib/server/db/schema.js';
 import { isValidEmail, isValidUsername } from '$lib/validation.js';
+import { newId, newSecureToken } from '$lib/server/id.js';
 
 // ---------------------------------------------------------------------------
 // Argon2id parameters (OWASP recommended minimums)
@@ -17,11 +17,6 @@ const ARGON2_OPTIONS = {
 
 const SESSION_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 const RESET_TTL_MS   = 30  * 24 * 60 * 60 * 1000;
-
-// Drizzle mysql binary() columns expect hex strings, not Buffers.
-function newId(): string {
-	return uuidv7().replace(/-/g, '');
-}
 
 function now(): Date {
 	return new Date();
@@ -113,7 +108,7 @@ export async function signin(input: {
 // session management
 // ---------------------------------------------------------------------------
 export async function createSession(userId: string): Promise<{ token: string }> {
-	const token     = uuidv7().replace(/-/g, '') + uuidv7().replace(/-/g, '');
+	const token     = newSecureToken();
 	const tokenHash = hashToken(token);
 	const createdAt = now();
 	const expiresAt = new Date(createdAt.getTime() + SESSION_TTL_MS);
@@ -155,7 +150,7 @@ export async function createPasswordReset(usernameOrEmail: string): Promise<{ to
 	if (!found.length) return null;
 
 	const user      = found[0];
-	const token     = uuidv7().replace(/-/g, '') + uuidv7().replace(/-/g, '');
+	const token     = newSecureToken();
 	const tokenHash = hashToken(token);
 	const createdAt = now();
 	const expiresAt = new Date(createdAt.getTime() + RESET_TTL_MS);
