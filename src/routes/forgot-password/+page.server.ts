@@ -1,6 +1,6 @@
 import { createPasswordReset } from '$lib/server/auth';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/schema';
+import { db } from '$lib/server/db/client';
+import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { Actions } from './$types';
 

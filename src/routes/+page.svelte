@@ -79,11 +79,3 @@
 		<span>Copyleft ↄ</span>
 	</div>
 </div>
-
-<style>
-	main {
-		padding: var(--size-8);
-		max-width: 960px;
-		margin: 0 auto;
-	}
-</style>
