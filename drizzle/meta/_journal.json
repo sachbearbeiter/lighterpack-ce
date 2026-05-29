@@ -8,6 +8,13 @@
       "when": 1779993053474,
       "tag": "0000_peaceful_big_bertha",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1748534400000,
+      "tag": "0001_add_is_moderator",
+      "breakpoints": true
     }
   ]
 }

@@ -8,6 +8,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		if (session) {
 			event.locals.userId = session.userId;
 			event.locals.username = session.username;
+			event.locals.isModerator = session.isModerator;
 		} else {
 			// Expired or invalid — clear cookie
 			event.cookies.delete('session', { path: '/' });

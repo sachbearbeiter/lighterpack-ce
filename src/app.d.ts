@@ -4,6 +4,7 @@ declare global {
 		interface Locals {
 			userId?: string;
 			username?: string;
+			isModerator?: boolean;
 		}
 	}
 }

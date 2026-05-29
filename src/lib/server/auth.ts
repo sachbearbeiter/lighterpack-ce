@@ -117,11 +117,11 @@ export async function createSession(userId: string): Promise<{ token: string }> 
 	return { token };
 }
 
-export async function validateSession(token: string): Promise<{ userId: string; username: string } | null> {
+export async function validateSession(token: string): Promise<{ userId: string; username: string; isModerator: boolean } | null> {
 	const tokenHash = hashToken(token);
 
 	const rows = await db
-		.select({ userId: sessions.userId, expiresAt: sessions.expiresAt, username: users.username })
+		.select({ userId: sessions.userId, expiresAt: sessions.expiresAt, username: users.username, isModerator: users.isModerator })
 		.from(sessions)
 		.innerJoin(users, eq(sessions.userId, users.id))
 		.where(eq(sessions.tokenHash, tokenHash))
@@ -131,7 +131,7 @@ export async function validateSession(token: string): Promise<{ userId: string; 
 	const row = rows[0];
 	if (row.expiresAt < now()) { await deleteSession(token); return null; }
 
-	return { userId: row.userId, username: row.username };
+	return { userId: row.userId, username: row.username, isModerator: row.isModerator ?? false };
 }
 
 export async function deleteSession(token: string): Promise<void> {
@@ -144,13 +144,10 @@ export async function deleteAllSessionsForUser(userId: string): Promise<number> 
 }
 
 // ---------------------------------------------------------------------------
-// moderator check
+// moderator check (DB-basiert, lokals werden im Hook gesetzt)
 // ---------------------------------------------------------------------------
-export function isModerator(username: string): boolean {
-	const raw = process.env.MODERATORS ?? '';
-	if (!raw.trim()) return false;
-	const list = raw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-	return list.includes(username.toLowerCase());
+export async function setModeratorStatus(userId: string, isMod: boolean): Promise<void> {
+	await db.update(users).set({ isModerator: isMod }).where(eq(users.id, userId));
 }
 
 // ---------------------------------------------------------------------------

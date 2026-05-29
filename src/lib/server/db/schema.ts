@@ -32,6 +32,7 @@ export const users = mysqlTable(
 		passwordStatus: mysqlEnum('password_status', ['active', 'must_reset', 'imported_no_password'])
 			.notNull()
 			.default('active'),
+		isModerator: boolean('is_moderator').notNull().default(false),
 		createdAt: datetime('created_at').notNull(),
 		legacyId: legacyId()
 	},

@@ -2,16 +2,15 @@ import { redirect, fail } from '@sveltejs/kit';
 import { or, like, eq, desc } from 'drizzle-orm';
 import { hash } from '@node-rs/argon2';
 import { db } from '$lib/server/db/client.js';
-import { users, sessions, passwordResets } from '$lib/server/db/schema.js';
-import { isModerator, deleteAllSessionsForUser } from '$lib/server/auth.js';
-import { newId } from '$lib/server/id.js';
+import { users, sessions } from '$lib/server/db/schema.js';
+import { deleteAllSessionsForUser, setModeratorStatus } from '$lib/server/auth.js';
 import type { PageServerLoad, Actions } from './$types';
 
 const ARGON2_OPTIONS = { memoryCost: 65536, timeCost: 3, parallelism: 1 };
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.userId || !locals.username) throw redirect(302, '/');
-	if (!isModerator(locals.username)) throw redirect(302, '/dashboard');
+	if (!locals.userId) throw redirect(302, '/');
+	if (!locals.isModerator) throw redirect(302, '/dashboard');
 
 	// Letzte 20 registrierten User als Übersicht
 	const recentUsers = await db
@@ -20,6 +19,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			username: users.username,
 			email: users.email,
 			passwordStatus: users.passwordStatus,
+			isModerator: users.isModerator,
 			createdAt: users.createdAt
 		})
 		.from(users)
@@ -47,7 +47,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	search: async ({ request, locals }) => {
-		if (!locals.username || !isModerator(locals.username)) return fail(403, { error: 'Forbidden' });
+		if (!locals.isModerator) return fail(403, { error: 'Forbidden' });
 
 		const data = await request.formData();
 		const q = String(data.get('q') ?? '').trim().toLowerCase();
@@ -60,6 +60,7 @@ export const actions: Actions = {
 				username: users.username,
 				email: users.email,
 				passwordStatus: users.passwordStatus,
+				isModerator: users.isModerator,
 				createdAt: users.createdAt
 			})
 			.from(users)
@@ -83,7 +84,7 @@ export const actions: Actions = {
 	},
 
 	clearSessions: async ({ request, locals }) => {
-		if (!locals.username || !isModerator(locals.username)) return fail(403, { error: 'Forbidden' });
+		if (!locals.isModerator) return fail(403, { error: 'Forbidden' });
 
 		const data = await request.formData();
 		const userId = String(data.get('userId') ?? '');
@@ -95,7 +96,7 @@ export const actions: Actions = {
 	},
 
 	resetPassword: async ({ request, locals }) => {
-		if (!locals.username || !isModerator(locals.username)) return fail(403, { error: 'Forbidden' });
+		if (!locals.isModerator) return fail(403, { error: 'Forbidden' });
 
 		const data = await request.formData();
 		const userId = String(data.get('userId') ?? '');
@@ -119,7 +120,7 @@ export const actions: Actions = {
 	},
 
 	setPasswordStatus: async ({ request, locals }) => {
-		if (!locals.username || !isModerator(locals.username)) return fail(403, { error: 'Forbidden' });
+		if (!locals.isModerator) return fail(403, { error: 'Forbidden' });
 
 		const data = await request.formData();
 		const userId = String(data.get('userId') ?? '');
@@ -132,5 +133,21 @@ export const actions: Actions = {
 
 		await db.update(users).set({ passwordStatus: status }).where(eq(users.id, userId));
 		return { actionDone: 'setPasswordStatus', targetUsername, status };
+	},
+
+	toggleModerator: async ({ request, locals }) => {
+		if (!locals.isModerator) return fail(403, { error: 'Forbidden' });
+
+		const data = await request.formData();
+		const userId = String(data.get('userId') ?? '');
+		const targetUsername = String(data.get('username') ?? '');
+		const grant = String(data.get('grant') ?? 'false') === 'true';
+
+		if (!userId) return fail(400, { error: 'No userId provided.' });
+		if (!grant && userId === locals.userId)
+			return fail(400, { error: 'You cannot remove your own moderator rights.' });
+
+		await setModeratorStatus(userId, grant);
+		return { actionDone: 'toggleModerator', targetUsername, grant };
 	}
 };

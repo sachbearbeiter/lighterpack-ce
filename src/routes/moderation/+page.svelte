@@ -23,7 +23,13 @@
 					? `✅ Password reset for ${(form as any).targetUsername} — all sessions invalidated`
 					: form.actionDone === 'setPasswordStatus'
 						? `✅ Status set to "${(form as any).status}" for ${(form as any).targetUsername}`
-						: '';
+						: form.actionDone === 'toggleModerator'
+							? `✅ ${(form as any).targetUsername} ist jetzt ${(form as any).grant ? '🛡️ Moderator' : 'kein Moderator mehr'}`
+							: '';
+		// Selektierten User aktualisieren (isModerator-Flag)
+		if (form.actionDone === 'toggleModerator' && selectedUser) {
+			selectedUser = { ...selectedUser, isModerator: (form as any).grant };
+		}
 	}
 
 	$: displayUsers = (form && 'searchResults' in form)
@@ -140,6 +146,11 @@
 							{selectedUser.passwordStatus}
 						</span>
 
+						<span style="color:#666;">Moderator</span>
+						<span style="color:{selectedUser.isModerator ? '#7eb8f7' : '#555'}; font-weight:600;">
+							{selectedUser.isModerator ? '🛡️ Ja' : 'Nein'}
+						</span>
+
 						<span style="color:#666;">Aktive Sessions</span>
 						<span style="color:#ddd;">{selectedUser.sessionCount}</span>
 					</div>
@@ -224,6 +235,30 @@
 										Set Status
 									</button>
 								</div>
+							</form>
+						</section>
+
+						<!-- Moderator-Rechte -->
+						<section style="background:#1a1a1a; border:1px solid #2a2a2a; border-radius:6px; padding:16px;">
+							<h3 style="margin:0 0 8px; font-size:13px; color:#aaa; text-transform:uppercase; letter-spacing:.05em;">
+								🛡️ Moderator-Rechte
+							</h3>
+							<p style="font-size:12px; color:#666; margin:0 0 12px;">
+								Gibt Zugang zum /moderation Panel. Kann sich nicht selbst entzogen werden.
+							</p>
+							<form method="POST" action="?/toggleModerator" use:enhance on:submit={() => { confirmMsg = ''; }}>
+								<input type="hidden" name="userId" value={selectedUser.id} />
+								<input type="hidden" name="username" value={selectedUser.username} />
+								<input type="hidden" name="grant" value={String(!selectedUser.isModerator)} />
+								{#if selectedUser.isModerator}
+									<button type="submit" style="background:#5a2020; color:#fcc; border:1px solid #7a3030; padding:7px 16px; border-radius:4px; cursor:pointer; font-size:13px;">
+										Moderator-Rechte entziehen
+									</button>
+								{:else}
+									<button type="submit" style="background:#1a3a5a; color:#7eb8f7; border:1px solid #2a5a8a; padding:7px 16px; border-radius:4px; cursor:pointer; font-size:13px;">
+										Zum Moderator machen
+									</button>
+								{/if}
 							</form>
 						</section>
 
