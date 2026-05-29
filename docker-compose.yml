@@ -35,6 +35,7 @@ services:
       DB_PASSWORD: lighterpack
       DB_NAME: lighterpack
       ORIGIN: http://46.224.134.35:3000
+      MODERATORS: test
     depends_on:
       db:
         condition: service_healthy

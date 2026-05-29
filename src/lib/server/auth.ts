@@ -138,6 +138,21 @@ export async function deleteSession(token: string): Promise<void> {
 	await db.delete(sessions).where(eq(sessions.tokenHash, hashToken(token)));
 }
 
+export async function deleteAllSessionsForUser(userId: string): Promise<number> {
+	const result = await db.delete(sessions).where(eq(sessions.userId, userId));
+	return (result as unknown as { affectedRows: number }).affectedRows ?? 0;
+}
+
+// ---------------------------------------------------------------------------
+// moderator check
+// ---------------------------------------------------------------------------
+export function isModerator(username: string): boolean {
+	const raw = process.env.MODERATORS ?? '';
+	if (!raw.trim()) return false;
+	const list = raw.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+	return list.includes(username.toLowerCase());
+}
+
 // ---------------------------------------------------------------------------
 // password reset
 // ---------------------------------------------------------------------------
