@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Deploy to VPS",
+			"type": "shell",
+			"command": "git push && ssh vps1 \"cd /opt/lighterpack-ce && git pull && docker-compose build app && docker-compose up -d && docker-compose logs app --tail=5\"",
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}
