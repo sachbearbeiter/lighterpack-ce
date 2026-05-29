@@ -13,7 +13,7 @@
 <div id="lpWelcomeContainer">
 	<div id="lpWelcome" class="lpContainer">
 		<h1>
-			<strong>LighterPack</strong> helps you track and share your gear list and pack weight.
+			<strong>LighterPack</strong> helps you track the gear you bring on adventures.
 		</h1>
 
 		<div class="lpWelcomeContent">
@@ -39,19 +39,17 @@
 
 				<div class="lpValuePropContainer">
 					<ul id="lpValueProp">
-						<li>
-							<h3><strong>Enter</strong> your gear</h3>
-							<p>Add every item from your next adventure. Track weight, price, and quantity.</p>
+						<li id="valueEnter">
+							<h3><strong>1.</strong> Enter your packing lists</h3>
 						</li>
-						<li>
-							<h3><strong>Visualize</strong> your kit</h3>
-							<p>See weight broken down by category with interactive charts.</p>
+						<li id="valueVisualize">
+							<h3><strong>2.</strong> Visualize your pack weights</h3>
 						</li>
-						<li>
-							<h3><strong>Share</strong> your list</h3>
-							<p>Get a public link. Anyone can view your list without an account.</p>
+						<li id="valueShare">
+							<h3><strong>3.</strong> Share your lists with others</h3>
 						</li>
 					</ul>
+					<img id="lpWelcomeScreenshot" src="/images/screenshot.jpg" alt="A screenshot of the LighterPack interface" />
 				</div>
 			</div>
 

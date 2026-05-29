@@ -75,7 +75,7 @@ a { text-decoration: none; }
 input#lpListName { background: transparent; border: 1px solid transparent; font-size: 24px; font-weight: 600; padding: 12px 15px; width: 100%; }
 input#lpListName:hover, input#lpListName:focus { background: #fff; border-color: rgba(0,0,0,0.15); outline: none; }
 
-#lpWelcomeContainer { background: #385f8b; background-size: cover; min-height: 100vh; padding-top: 80px; }
+#lpWelcomeContainer { background: #385f8b url("/images/lp_bg2.jpg") 50% 50%; background-size: cover; min-height: 100vh; padding-top: 80px; }
 .lpContainer { margin: 0 auto; max-width: 900px; padding: 0 var(--spacingMedium); }
 #lpWelcome h1 { color: #fff; font-size: 28px; font-weight: normal; margin: 0 0 80px; text-align: center; }
 #lpWelcome h1 strong { font-size: 36px; }
