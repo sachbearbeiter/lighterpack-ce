@@ -1,60 +1,75 @@
 <script lang="ts">
+	import Sidebar from '$lib/components/Sidebar.svelte';
+	import ListHeader from '$lib/components/ListHeader.svelte';
+	import List from '$lib/components/List.svelte';
 	import type { PageData } from './$types';
-	export let data: PageData;
 
-	let showDebug = false;
+	let { data }: { data: PageData } = $props();
+
+	// ── Client-seitiger State (analog zu $store.state im Original) ──────────
+	let showSidebar = $state(true);
+	let activeListId = $state<string | null>(data.lists?.[0]?.id ?? null);
+	let lists = $state(data.lists ?? []);
+
+	// Aktive Liste aus dem Array
+	const activeList = $derived(lists.find((l) => l.id === activeListId) ?? null);
+
+	// Kategorien der aktiven Liste (TODO: per-Liste filtern wenn CategoryItems geladen)
+	const activeCategories = $derived(data.categories ?? []);
+
+	// ── Handlers ────────────────────────────────────────────────────────────
+	function toggleSidebar() {
+		showSidebar = !showSidebar;
+	}
+
+	function selectList(id: string) {
+		activeListId = id;
+		// TODO: URL updaten (Todo #2 — URL-Routing)
+	}
+
+	function handleNewList() {
+		// TODO: CRUD — Todo #3
+		console.log('newList');
+	}
+
+	function handleListNameChange(name: string) {
+		if (!activeListId) return;
+		lists = lists.map((l) => (l.id === activeListId ? { ...l, name } : l));
+		// TODO: debounced API call
+	}
+
+	function handleNewCategory() {
+		// TODO: CRUD — Todo #4
+		console.log('newCategory');
+	}
 </script>
 
-<svelte:head><title>LighterPack – {data.username}</title></svelte:head>
+<svelte:head>
+	<title>LighterPack – {data.username}</title>
+</svelte:head>
 
-<div id="main" class:lpHasSidebar={true}>
-	<div id="sidebar">
-		<h1>LighterPack</h1>
-		<p style="color:#ccc; padding: 0 10px;">Welcome, <strong>{data.username}</strong>!</p>
+<div id="main" class:lpHasSidebar={showSidebar}>
+	<Sidebar
+		{lists}
+		{activeListId}
+		onSelectList={selectList}
+		onNewList={handleNewList}
+	/>
 
-		<section style="padding: 10px;">
-			<h2 style="color:#aaa; font-size:11px; text-transform:uppercase; margin-bottom:6px;">My Lists</h2>
-			{#if data.lists && data.lists.length > 0}
-				<ul style="list-style:none; padding:0; margin:0;">
-					{#each data.lists as list}
-						<li style="padding:4px 0; color:#ddd; font-size:13px;">📋 {list.name || '(Unnamed list)'}</li>
-					{/each}
-				</ul>
-			{:else}
-				<p style="color:#777; font-size:12px;">No lists yet. Create your first list!</p>
-			{/if}
-		</section>
+	<div class="lpList lpTransition">
+		<ListHeader
+			listName={activeList?.name ?? ''}
+			hasSidebar={showSidebar}
+			username={data.username}
+			onToggleSidebar={toggleSidebar}
+			onListNameChange={handleListNameChange}
+		/>
 
-		{#if data.library}
-			<section style="padding:10px; border-top: 1px solid #333; margin-top:10px;">
-				<h2 style="color:#aaa; font-size:11px; text-transform:uppercase; margin-bottom:6px;">Library</h2>
-				<p style="color:#888; font-size:12px;">
-					{data.itemCount ?? 0} item{(data.itemCount ?? 0) !== 1 ? 's' : ''} ·
-					{data.categories?.length ?? 0} categor{(data.categories?.length ?? 0) !== 1 ? 'ies' : 'y'}
-				</p>
-				<p style="color:#666; font-size:11px;">Unit: {data.library.totalUnit} · {data.library.currencySymbol}</p>
-			</section>
-		{/if}
-	</div>
-
-	<div class="lpList">
-		<div id="header" class="clearfix">
-			<span class="headerItem" id="hamburger" title="Toggle sidebar">☰</span>
-			<input id="lpListName" class="headerItem" type="text" placeholder="New list name…" />
-			<span class="headerItem" style="float:right; font-size:12px; color:#aaa; line-height:50px; margin-right:10px;">
-				Signed in as <strong>{data.username}</strong> ·
-				<a href="/api/signout" style="color:#aaa;">Sign out</a>
-			</span>
-		</div>
-
-		<div style="padding:40px 20px; text-align:center; color:#aaa;">
-			{#if !data.lists || data.lists.length === 0}
-				<p style="font-size:18px; margin-bottom:10px;">Welcome to LighterPack! 🎒</p>
-				<p style="font-size:14px;">Create your first list to start tracking your gear.</p>
-			{:else}
-				<p style="font-size:14px;">Select a list from the sidebar to start editing.</p>
-			{/if}
-		</div>
+		<List
+			list={activeList}
+			categories={activeCategories}
+			onNewCategory={handleNewCategory}
+		/>
 
 		<div id="lpFooter">
 			<div class="lpSiteBy">
@@ -63,22 +78,7 @@
 			</div>
 			<div class="lpContact">
 				<a class="lpHref" href="https://github.com/sachbearbeiter/lighterpack-ce" target="_blank" rel="noopener noreferrer">Copyleft</a> LighterPack CE
-				–
-				<button
-					onclick={() => showDebug = !showDebug}
-					style="background:none; border:none; color:#666; cursor:pointer; font-size:11px; padding:0; text-decoration:underline;"
-				>🐛 debug</button>
 			</div>
 		</div>
-
-		{#if showDebug}
-			<div style="background:#111; border-top:1px solid #333; padding:12px 16px; font-size:11px; font-family:monospace; color:#0f0;">
-				<strong style="color:#ff0;">🐛 Debug Info</strong>
-				<pre style="margin:8px 0 0; white-space:pre-wrap; color:#8f8;">{JSON.stringify(data.debug, null, 2)}</pre>
-				{#if data.library}
-					<pre style="margin:4px 0 0; white-space:pre-wrap; color:#88f;">{JSON.stringify({ library: data.library }, null, 2)}</pre>
-				{/if}
-			</div>
-		{/if}
 	</div>
 </div>
