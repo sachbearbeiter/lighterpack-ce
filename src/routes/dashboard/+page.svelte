@@ -60,7 +60,7 @@
 			<span>Copyleft ↄ</span>
 			<span style="margin-left:auto;">
 				<button
-					on:click={() => showDebug = !showDebug}
+					onclick={() => showDebug = !showDebug}
 					style="background:none; border:none; color:#666; cursor:pointer; font-size:11px; padding:0;"
 				>🐛 debug</button>
 			</span>

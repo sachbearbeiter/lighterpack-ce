@@ -92,7 +92,7 @@
 					{#each displayUsers as u}
 						<li>
 							<button
-								on:click={() => selectUser(u)}
+							onclick={() => selectUser(u)}
 								style="
 									width:100%; text-align:left; background:{selectedUser?.id === u.id ? '#1e3a5f' : 'transparent'};
 									border:none; border-radius:4px; padding:8px 10px; cursor:pointer; color:#ddd;
@@ -166,7 +166,7 @@
 							<p style="font-size:12px; color:#666; margin:0 0 12px;">
 								Löscht alle aktiven Logins — der User muss sich neu einloggen.
 							</p>
-							<form method="POST" action="?/clearSessions" use:enhance on:submit={() => { confirmMsg = ''; }}>
+							<form method="POST" action="?/clearSessions" use:enhance onsubmit={() => { confirmMsg = ''; }}>
 								<input type="hidden" name="userId" value={selectedUser.id} />
 								<input type="hidden" name="username" value={selectedUser.username} />
 								<button
@@ -186,7 +186,7 @@
 							<p style="font-size:12px; color:#666; margin:0 0 12px;">
 								Setzt ein neues Passwort und invalidiert alle Sessions.
 							</p>
-							<form method="POST" action="?/resetPassword" use:enhance on:submit={() => { confirmMsg = ''; }}>
+							<form method="POST" action="?/resetPassword" use:enhance onsubmit={() => { confirmMsg = ''; }}>
 								<input type="hidden" name="userId" value={selectedUser.id} />
 								<input type="hidden" name="username" value={selectedUser.username} />
 								<div style="display:flex; gap:8px; align-items:center;">
@@ -216,7 +216,7 @@
 							<p style="font-size:12px; color:#666; margin:0 0 12px;">
 								Erzwingt beim nächsten Login einen Passwort-Reset.
 							</p>
-							<form method="POST" action="?/setPasswordStatus" use:enhance on:submit={() => { confirmMsg = ''; }}>
+							<form method="POST" action="?/setPasswordStatus" use:enhance onsubmit={() => { confirmMsg = ''; }}>
 								<input type="hidden" name="userId" value={selectedUser.id} />
 								<input type="hidden" name="username" value={selectedUser.username} />
 								<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
@@ -246,7 +246,7 @@
 							<p style="font-size:12px; color:#666; margin:0 0 12px;">
 								Gibt Zugang zum /moderation Panel. Kann sich nicht selbst entzogen werden.
 							</p>
-							<form method="POST" action="?/toggleModerator" use:enhance on:submit={() => { confirmMsg = ''; }}>
+							<form method="POST" action="?/toggleModerator" use:enhance onsubmit={() => { confirmMsg = ''; }}>
 								<input type="hidden" name="userId" value={selectedUser.id} />
 								<input type="hidden" name="username" value={selectedUser.username} />
 								<input type="hidden" name="grant" value={String(!selectedUser.isModerator)} />
