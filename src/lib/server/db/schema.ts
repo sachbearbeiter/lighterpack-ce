@@ -1,7 +1,6 @@
 import {
 	mysqlTable,
 	varchar,
-	binary,
 	text,
 	int,
 	decimal,
@@ -14,9 +13,10 @@ import {
 } from 'drizzle-orm/mysql-core';
 
 // ---------------------------------------------------------------------------
-// Helper: BINARY(16) UUID primary key
+// Helper: VARCHAR(32) hex UUID primary key
 // ---------------------------------------------------------------------------
-const id = () => binary('id', { length: 16 }).notNull();
+const id = () => varchar('id', { length: 32 }).notNull();
+const fk = (col: string) => varchar(col, { length: 32 }).notNull();
 const legacyId = () => varchar('legacy_id', { length: 64 });
 
 // ---------------------------------------------------------------------------
@@ -49,7 +49,7 @@ export const sessions = mysqlTable(
 	'sessions',
 	{
 		id: id().primaryKey(),
-		userId: binary('user_id', { length: 16 }).notNull(),
+		userId: fk('user_id'),
 		tokenHash: varchar('token_hash', { length: 255 }).notNull(),
 		expiresAt: datetime('expires_at').notNull(),
 		createdAt: datetime('created_at').notNull()
@@ -67,7 +67,7 @@ export const passwordResets = mysqlTable(
 	'password_resets',
 	{
 		id: id().primaryKey(),
-		userId: binary('user_id', { length: 16 }).notNull(),
+		userId: fk('user_id'),
 		tokenHash: varchar('token_hash', { length: 255 }).notNull(),
 		expiresAt: datetime('expires_at').notNull(),
 		usedAt: datetime('used_at'),
@@ -86,7 +86,7 @@ export const libraries = mysqlTable(
 	'libraries',
 	{
 		id: id().primaryKey(),
-		userId: binary('user_id', { length: 16 }).notNull(),
+		userId: fk('user_id'),
 		totalUnit: varchar('total_unit', { length: 4 }).notNull().default('oz'),
 		itemUnit: varchar('item_unit', { length: 4 }).notNull().default('oz'),
 		currencySymbol: varchar('currency_symbol', { length: 4 }).notNull().default('$'),
@@ -108,7 +108,7 @@ export const items = mysqlTable(
 	'items',
 	{
 		id: id().primaryKey(),
-		libraryId: binary('library_id', { length: 16 }).notNull(),
+		libraryId: fk('library_id'),
 		name: varchar('name', { length: 512 }).notNull().default(''),
 		description: text('description'),
 		weightMg: int('weight_mg').notNull().default(0),   // milligrams, source of truth
@@ -132,7 +132,7 @@ export const categories = mysqlTable(
 	'categories',
 	{
 		id: id().primaryKey(),
-		libraryId: binary('library_id', { length: 16 }).notNull(),
+		libraryId: fk('library_id'),
 		name: varchar('name', { length: 512 }).notNull().default(''),
 		color: json('color'),   // {r, g, b}
 		sortOrder: int('sort_order').notNull().default(0),
@@ -151,8 +151,8 @@ export const categoryItems = mysqlTable(
 	'category_items',
 	{
 		id: id().primaryKey(),
-		categoryId: binary('category_id', { length: 16 }).notNull(),
-		itemId: binary('item_id', { length: 16 }).notNull(),
+		categoryId: fk('category_id'),
+		itemId: fk('item_id'),
 		qty: int('qty').notNull().default(1),
 		worn: boolean('worn').notNull().default(false),
 		consumable: boolean('consumable').notNull().default(false),
@@ -172,7 +172,7 @@ export const lists = mysqlTable(
 	'lists',
 	{
 		id: id().primaryKey(),
-		libraryId: binary('library_id', { length: 16 }).notNull(),
+		libraryId: fk('library_id'),
 		name: varchar('name', { length: 512 }).notNull().default(''),
 		externalId: varchar('external_id', { length: 32 }),
 		description: text('description'),
@@ -195,8 +195,8 @@ export const listCategories = mysqlTable(
 	'list_categories',
 	{
 		id: id().primaryKey(),
-		listId: binary('list_id', { length: 16 }).notNull(),
-		categoryId: binary('category_id', { length: 16 }).notNull(),
+		listId: fk('list_id'),
+		categoryId: fk('category_id'),
 		sortOrder: int('sort_order').notNull().default(0)
 	},
 	(t) => ({

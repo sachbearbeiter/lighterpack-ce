@@ -1,6 +1,6 @@
 CREATE TABLE `categories` (
-	`id` binary(16) NOT NULL,
-	`library_id` binary(16) NOT NULL,
+	`id` varchar(32) NOT NULL,
+	`library_id` varchar(32) NOT NULL,
 	`name` varchar(512) NOT NULL DEFAULT '',
 	`color` json,
 	`sort_order` int NOT NULL DEFAULT 0,
@@ -10,9 +10,9 @@ CREATE TABLE `categories` (
 );
 --> statement-breakpoint
 CREATE TABLE `category_items` (
-	`id` binary(16) NOT NULL,
-	`category_id` binary(16) NOT NULL,
-	`item_id` binary(16) NOT NULL,
+	`id` varchar(32) NOT NULL,
+	`category_id` varchar(32) NOT NULL,
+	`item_id` varchar(32) NOT NULL,
 	`qty` int NOT NULL DEFAULT 1,
 	`worn` boolean NOT NULL DEFAULT false,
 	`consumable` boolean NOT NULL DEFAULT false,
@@ -22,7 +22,7 @@ CREATE TABLE `category_items` (
 );
 --> statement-breakpoint
 CREATE TABLE `import_log` (
-	`id` binary(16) NOT NULL,
+	`id` varchar(32) NOT NULL,
 	`source_identifier` varchar(255) NOT NULL,
 	`started_at` datetime NOT NULL,
 	`finished_at` datetime,
@@ -35,8 +35,8 @@ CREATE TABLE `import_log` (
 );
 --> statement-breakpoint
 CREATE TABLE `items` (
-	`id` binary(16) NOT NULL,
-	`library_id` binary(16) NOT NULL,
+	`id` varchar(32) NOT NULL,
+	`library_id` varchar(32) NOT NULL,
 	`name` varchar(512) NOT NULL DEFAULT '',
 	`description` text,
 	`weight_mg` int NOT NULL DEFAULT 0,
@@ -51,8 +51,8 @@ CREATE TABLE `items` (
 );
 --> statement-breakpoint
 CREATE TABLE `libraries` (
-	`id` binary(16) NOT NULL,
-	`user_id` binary(16) NOT NULL,
+	`id` varchar(32) NOT NULL,
+	`user_id` varchar(32) NOT NULL,
 	`total_unit` varchar(4) NOT NULL DEFAULT 'oz',
 	`item_unit` varchar(4) NOT NULL DEFAULT 'oz',
 	`currency_symbol` varchar(4) NOT NULL DEFAULT '$',
@@ -66,16 +66,16 @@ CREATE TABLE `libraries` (
 );
 --> statement-breakpoint
 CREATE TABLE `list_categories` (
-	`id` binary(16) NOT NULL,
-	`list_id` binary(16) NOT NULL,
-	`category_id` binary(16) NOT NULL,
+	`id` varchar(32) NOT NULL,
+	`list_id` varchar(32) NOT NULL,
+	`category_id` varchar(32) NOT NULL,
 	`sort_order` int NOT NULL DEFAULT 0,
 	CONSTRAINT `list_categories_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `lists` (
-	`id` binary(16) NOT NULL,
-	`library_id` binary(16) NOT NULL,
+	`id` varchar(32) NOT NULL,
+	`library_id` varchar(32) NOT NULL,
 	`name` varchar(512) NOT NULL DEFAULT '',
 	`external_id` varchar(32),
 	`description` text,
@@ -89,8 +89,8 @@ CREATE TABLE `lists` (
 );
 --> statement-breakpoint
 CREATE TABLE `password_resets` (
-	`id` binary(16) NOT NULL,
-	`user_id` binary(16) NOT NULL,
+	`id` varchar(32) NOT NULL,
+	`user_id` varchar(32) NOT NULL,
 	`token_hash` varchar(255) NOT NULL,
 	`expires_at` datetime NOT NULL,
 	`used_at` datetime,
@@ -100,8 +100,8 @@ CREATE TABLE `password_resets` (
 );
 --> statement-breakpoint
 CREATE TABLE `sessions` (
-	`id` binary(16) NOT NULL,
-	`user_id` binary(16) NOT NULL,
+	`id` varchar(32) NOT NULL,
+	`user_id` varchar(32) NOT NULL,
 	`token_hash` varchar(255) NOT NULL,
 	`expires_at` datetime NOT NULL,
 	`created_at` datetime NOT NULL,
@@ -110,7 +110,7 @@ CREATE TABLE `sessions` (
 );
 --> statement-breakpoint
 CREATE TABLE `users` (
-	`id` binary(16) NOT NULL,
+	`id` varchar(32) NOT NULL,
 	`username` varchar(32) NOT NULL,
 	`email` varchar(254) NOT NULL,
 	`password_hash` varchar(255),
