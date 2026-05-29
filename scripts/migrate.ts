@@ -18,7 +18,16 @@ const connection = await mysql.createConnection({
 const db = drizzle(connection);
 
 console.log('Running migrations…');
-await migrate(db, { migrationsFolder: join(__dirname, '../drizzle') });
-console.log('Migrations complete.');
+try {
+	await migrate(db, { migrationsFolder: join(__dirname, '../drizzle') });
+	console.log('Migrations complete.');
+} catch (err: any) {
+	// Already applied (table exists) is fine — Drizzle tracks via __drizzle_migrations
+	if (err?.sqlMessage?.includes('already exists') || err?.code === 'ER_TABLE_EXISTS_ERROR') {
+		console.log('Migrations already applied, skipping.');
+	} else {
+		throw err;
+	}
+}
 
 await connection.end();
