@@ -22,10 +22,13 @@ try {
 	await migrate(db, { migrationsFolder: join(__dirname, '../drizzle') });
 	console.log('Migrations complete.');
 } catch (err: any) {
-	// Already applied (table exists) is fine — Drizzle tracks via __drizzle_migrations
-	if (err?.sqlMessage?.includes('already exists') || err?.code === 'ER_TABLE_EXISTS_ERROR') {
-		console.log('Migrations already applied, skipping.');
+	// Drizzle wirft, wenn die __drizzle_migrations Tabelle oder eine Tabelle schon existiert
+	// Das passiert beim ersten Mal nach einem Cold-Start nicht mehr — nur als Sicherheitsnetz
+	const msg = err?.sqlMessage ?? err?.message ?? '';
+	if (msg.includes('already exists') || err?.code === 'ER_TABLE_EXISTS_ERROR') {
+		console.log('Some migrations already applied, skipping.');
 	} else {
+		console.error('Migration error:', err);
 		throw err;
 	}
 }
