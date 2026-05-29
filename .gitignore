@@ -5,8 +5,5 @@ dist/
 .env
 .env.*
 !.env.example
-drizzle/
-*.local
-
-# local CSV files
-*.csv
+# drizzle migrations are committed so Docker can run them
+# drizzle/
