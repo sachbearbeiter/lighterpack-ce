@@ -22,6 +22,56 @@ as a self-hostable community edition.
 
 ---
 
+## ⚠️ CRITICAL — Svelte 5 Event Syntax
+
+This project uses **Svelte 5** (`"svelte": "^5.0.0"`). Event directives were removed.
+
+```svelte
+<!-- ✅ CORRECT — Svelte 5 -->
+<button onclick={() => doSomething()}>Click</button>
+<form onsubmit={(e) => { e.preventDefault(); handle(); }}>
+<input oninput={(e) => value = e.currentTarget.value} />
+<select onchange={(e) => selected = e.currentTarget.value} />
+
+<!-- ❌ WRONG — Svelte 4 syntax, silently broken in Svelte 5 -->
+<button on:click={() => doSomething()}>Click</button>
+<form on:submit={...}>
+<input on:input={...} />
+```
+
+**Rule:** Before writing any Svelte markup, grep for `on:` — if found, replace immediately.
+`use:enhance` from `$app/forms` is still valid and must NOT be changed.
+
+---
+
+## ⚠️ CRITICAL — Test Locally Before Deploying
+
+**Mandatory sequence — no exceptions:**
+
+```
+1. Write code change
+2. Test locally: npm run dev → open http://localhost:5173
+3. Verify the specific feature works
+4. Fix any errors
+5. Only then: git commit + push + VPS deploy
+```
+
+**Never deploy without local verification.**
+
+### Local DB setup
+
+`.env` must point to a reachable MariaDB instance.
+Default `.env` points to VPS (`DB_HOST=46.224.134.35`) — port 3306 must be accessible.
+If not accessible locally, create `.env.local` overriding with a local Docker DB:
+
+```bash
+docker compose up -d db   # starts local mariadb on port 3306
+npm run db:migrate
+npm run dev
+```
+
+---
+
 ## Non-Negotiable Rules
 
 1. **All code comments in English.** No German in source files.
@@ -32,6 +82,8 @@ as a self-hostable community edition.
 5. **No `mongojs`, `request`, `mailgun-js`, `formidable@1`.** Use modern equivalents.
 6. **`npm run check` must pass (0 errors) before every commit.**
 7. **`npm test -- --run` must pass (all green) before every commit.**
+8. **Never use `on:event` Svelte 4 syntax.** Always use `onevent` Svelte 5 syntax.
+9. **Never deploy without local test.** Verify in browser first.
 
 ---
 
@@ -131,7 +183,7 @@ The importer is a **standalone CLI** tool. It is never imported by the app serve
 
 - **TypeScript strict mode.** No implicit `any`. No `as any` except documented edge cases.
 - **No default exports** for utilities and services. Named exports only.
-- **Svelte components:** use Svelte 5 runes (`$state`, `$derived`, `$effect`, `$props`).
+- **Svelte components:** use `onclick`/`onsubmit` etc. (Svelte 5 event syntax). Props still use `export let` (legacy mode — do NOT migrate to runes `$props()` without explicit instruction).
 - **Server-side code** lives in `src/lib/server/` or `+page.server.ts` / `+server.ts`.
   Never import server code in client-side files.
 - **Domain logic** (`src/lib/domain/`) must have zero framework dependencies and zero I/O.
@@ -156,22 +208,38 @@ The importer is a **standalone CLI** tool. It is never imported by the app serve
 
 ## Running Locally
 
-```bash
-# 1. Start MariaDB
-docker compose up -d db
+No local Docker needed. The VPS MariaDB is used via SSH tunnel.
 
-# 2. Copy and fill in env
-cp .env.example .env
+### Start SSH tunnel (run once per session, keep open)
 
-# 3. Install dependencies
-npm install
+```powershell
+ssh -N -L 3307:localhost:3306 vps1
+# Tunnels local port 3307 → VPS MariaDB port 3306
+# Keep this terminal open while developing
+```
 
-# 4. Run migrations
-npm run db:migrate
+### Start dev server (separate terminal)
 
-# 5. Start dev server
+```powershell
+cd "d:\KI Agenten Spielplatz\lighterpack-ce"
 npm run dev
+# → http://localhost:5173  (or 5174 if 5173 is taken)
+```
 
+### .env (already configured, do not change)
+
+```
+DB_HOST=127.0.0.1
+DB_PORT=3307        ← SSH tunnel port
+DB_USER=lighterpack
+DB_PASSWORD=lighterpack
+DB_NAME=lighterpack
+ORIGIN=http://localhost:5173
+```
+
+**The SSH tunnel must be running before starting `npm run dev`**, otherwise DB calls throw 500.
+
+```bash
 # Run unit tests
 npm test -- --run
 

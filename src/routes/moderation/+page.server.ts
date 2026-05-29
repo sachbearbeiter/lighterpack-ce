@@ -10,7 +10,7 @@ const ARGON2_OPTIONS = { memoryCost: 65536, timeCost: 3, parallelism: 1 };
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.userId) throw redirect(302, '/');
-	if (!locals.isModerator) throw redirect(302, '/dashboard');
+	if (!locals.isModerator) throw redirect(302, '/');
 
 	// Letzte 20 registrierten User als Übersicht
 	const recentUsers = await db

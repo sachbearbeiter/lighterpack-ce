@@ -1,8 +1,12 @@
 import { redirect } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
-import { db } from '$lib/server/db/client.js';
-import { libraries, lists, categories, items, listCategories, categoryItems } from '$lib/server/db/schema.js';
 import type { PageServerLoad } from './$types';
+
+// /dashboard existiert nicht mehr als eigenständige Route.
+// Das Dashboard liegt jetzt unter /  (wie im Original-Lighterpack).
+export const load: PageServerLoad = async () => {
+	throw redirect(301, '/');
+};
+
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.userId) throw redirect(302, '/');

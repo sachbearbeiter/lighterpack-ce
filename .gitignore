@@ -6,4 +6,8 @@ dist/
 .env.*
 !.env.example
 # drizzle migrations are committed so Docker can run them
+
+# local dev logs
+dev-server.log
+dev-server-err.log
 # drizzle/

@@ -1,79 +1,84 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { PageData, ActionData } from './$types';
-
+	import type { PageData } from './$types';
 	export let data: PageData;
-	export let form: ActionData;
+
+	let showDebug = false;
 </script>
 
-<svelte:head>
-	<title>LighterPack – Track your gear, lighten your load</title>
-</svelte:head>
+<svelte:head><title>LighterPack – {data.username}</title></svelte:head>
 
-<div id="lpWelcomeContainer">
-	<div id="lpWelcome" class="lpContainer">
-		<h1>
-			<strong>LighterPack</strong> helps you track the gear you bring on adventures.
-		</h1>
+<div id="main" class:lpHasSidebar={true}>
+	<div id="sidebar">
+		<h1>LighterPack</h1>
+		<p style="color:#ccc; padding: 0 10px;">Welcome, <strong>{data.username}</strong>!</p>
 
-		<div class="lpWelcomeContent">
-			<div class="lpWelcomeRegisterContainer">
-				<div class="lpWelcomeRegister">
-					<h3 class="lpWelcomeContainerHeader">Register an account</h3>
-					<form method="POST" action="?/register" use:enhance>
-						<div class="lpFields">
-							<input type="text" name="username" placeholder="Username" autocomplete="username" required />
-							<input type="email" name="email" placeholder="Email address" autocomplete="email" required />
-							<input type="password" name="password" placeholder="Password" autocomplete="new-password" required />
-							<input type="password" name="passwordConfirm" placeholder="Confirm password" autocomplete="new-password" required />
-						</div>
-						{#if form?.registerError}
-							<ul class="lpError"><li>{form.registerError}</li></ul>
-						{/if}
-						<div class="lpButtons">
-							<button type="submit" class="lpButton">Register</button>
-							<a href="/signin" class="lpHref">Already registered? Sign in →</a>
-						</div>
-					</form>
-				</div>
+		<section style="padding: 10px;">
+			<h2 style="color:#aaa; font-size:11px; text-transform:uppercase; margin-bottom:6px;">My Lists</h2>
+			{#if data.lists && data.lists.length > 0}
+				<ul style="list-style:none; padding:0; margin:0;">
+					{#each data.lists as list}
+						<li style="padding:4px 0; color:#ddd; font-size:13px;">📋 {list.name || '(Unnamed list)'}</li>
+					{/each}
+				</ul>
+			{:else}
+				<p style="color:#777; font-size:12px;">No lists yet. Create your first list!</p>
+			{/if}
+		</section>
 
-				<div class="lpValuePropContainer">
-					<ul id="lpValueProp">
-						<li id="valueEnter">
-							<h3><strong>1.</strong> Enter your packing lists</h3>
-						</li>
-						<li id="valueVisualize">
-							<h3><strong>2.</strong> Visualize your pack weights</h3>
-						</li>
-						<li id="valueShare">
-							<h3><strong>3.</strong> Share your lists with others</h3>
-						</li>
-					</ul>
-					<img id="lpWelcomeScreenshot" src="/images/screenshot.jpg" alt="A screenshot of the LighterPack interface" />
-				</div>
-			</div>
-
-			<div class="lpWelcomeSigninContainer">
-				<h3 class="lpWelcomeContainerHeader">Sign in</h3>
-				<form method="POST" action="?/signin" use:enhance>
-					<div class="lpFields">
-						<input type="text" name="username" placeholder="Username" autocomplete="username" required />
-						<input type="password" name="password" placeholder="Password" autocomplete="current-password" required />
-					</div>
-					{#if form?.signinError}
-						<ul class="lpError"><li>{form.signinError}</li></ul>
-					{/if}
-					<div class="lpButtons">
-						<button type="submit" class="lpButton">Sign in</button>
-						<a href="/forgot-password" class="lpHref">Forgot username or password?</a>
-					</div>
-				</form>
-			</div>
-		</div>
+		{#if data.library}
+			<section style="padding:10px; border-top: 1px solid #333; margin-top:10px;">
+				<h2 style="color:#aaa; font-size:11px; text-transform:uppercase; margin-bottom:6px;">Library</h2>
+				<p style="color:#888; font-size:12px;">
+					{data.itemCount ?? 0} item{(data.itemCount ?? 0) !== 1 ? 's' : ''} ·
+					{data.categories?.length ?? 0} categor{(data.categories?.length ?? 0) !== 1 ? 'ies' : 'y'}
+				</p>
+				<p style="color:#666; font-size:11px;">Unit: {data.library.totalUnit} · {data.library.currencySymbol}</p>
+			</section>
+		{/if}
 	</div>
 
-	<div id="lpWelcomeFooter">
-		<span>Site by <a class="lpHref" href="https://galenmaly.com">Galen Maly</a> · Community Edition</span>
-		<span>Copyleft ↄ</span>
+	<div class="lpList">
+		<div id="header" class="clearfix">
+			<span class="headerItem" id="hamburger" title="Toggle sidebar">☰</span>
+			<input id="lpListName" class="headerItem" type="text" placeholder="New list name…" />
+			<span class="headerItem" style="float:right; font-size:12px; color:#aaa; line-height:50px; margin-right:10px;">
+				Signed in as <strong>{data.username}</strong> ·
+				<a href="/api/signout" style="color:#aaa;">Sign out</a>
+			</span>
+		</div>
+
+		<div style="padding:40px 20px; text-align:center; color:#aaa;">
+			{#if !data.lists || data.lists.length === 0}
+				<p style="font-size:18px; margin-bottom:10px;">Welcome to LighterPack! 🎒</p>
+				<p style="font-size:14px;">Create your first list to start tracking your gear.</p>
+			{:else}
+				<p style="font-size:14px;">Select a list from the sidebar to start editing.</p>
+			{/if}
+		</div>
+
+		<div id="lpFooter">
+			<div class="lpSiteBy">
+				Site by <a class="lpHref" href="https://galenmaly.com" target="_blank" rel="noopener noreferrer">Galen Maly</a>
+				and <a class="lpHref" href="https://github.com/galenmaly/lighterpack/graphs/contributors" target="_blank" rel="noopener noreferrer">friends</a>.
+			</div>
+			<div class="lpContact">
+				<a class="lpHref" href="https://github.com/sachbearbeiter/lighterpack-ce" target="_blank" rel="noopener noreferrer">Copyleft</a> LighterPack CE
+				–
+				<button
+					onclick={() => showDebug = !showDebug}
+					style="background:none; border:none; color:#666; cursor:pointer; font-size:11px; padding:0; text-decoration:underline;"
+				>🐛 debug</button>
+			</div>
+		</div>
+
+		{#if showDebug}
+			<div style="background:#111; border-top:1px solid #333; padding:12px 16px; font-size:11px; font-family:monospace; color:#0f0;">
+				<strong style="color:#ff0;">🐛 Debug Info</strong>
+				<pre style="margin:8px 0 0; white-space:pre-wrap; color:#8f8;">{JSON.stringify(data.debug, null, 2)}</pre>
+				{#if data.library}
+					<pre style="margin:4px 0 0; white-space:pre-wrap; color:#88f;">{JSON.stringify({ library: data.library }, null, 2)}</pre>
+				{/if}
+			</div>
+		{/if}
 	</div>
 </div>

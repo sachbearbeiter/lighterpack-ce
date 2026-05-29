@@ -1,41 +1,79 @@
 import { redirect } from '@sveltejs/kit';
-import { register, signin } from '$lib/server/auth';
-import type { Actions, PageServerLoad } from './$types';
+import { eq } from 'drizzle-orm';
+import { db } from '$lib/server/db/client.js';
+import { libraries, lists, categories, items, listCategories } from '$lib/server/db/schema.js';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	// Redirect to dashboard if already signed in
-	if (locals.userId) throw redirect(302, '/dashboard');
-	return {};
-};
+	// Nicht eingeloggt → Welcome-Seite
+	if (!locals.userId) throw redirect(302, '/welcome');
 
-export const actions: Actions = {
-	register: async ({ request, cookies }) => {
-		const data = await request.formData();
-		const username = String(data.get('username') ?? '');
-		const email = String(data.get('email') ?? '');
-		const password = String(data.get('password') ?? '');
-		const passwordConfirm = String(data.get('passwordConfirm') ?? '');
+	// Library laden
+	const [library] = await db
+		.select()
+		.from(libraries)
+		.where(eq(libraries.userId, locals.userId))
+		.limit(1);
 
-		if (password !== passwordConfirm) {
-			return { registerError: 'Passwords do not match.' };
+	if (!library) {
+		return { username: locals.username, library: null, lists: [], categories: [], itemCount: 0, debug: { userId: locals.userId, libraryFound: false } };
+	}
+
+	const userLists = await db
+		.select()
+		.from(lists)
+		.where(eq(lists.libraryId, library.id))
+		.orderBy(lists.sortOrder);
+
+	const userCategories = await db
+		.select()
+		.from(categories)
+		.where(eq(categories.libraryId, library.id))
+		.orderBy(categories.sortOrder);
+
+	const userItems = await db
+		.select()
+		.from(items)
+		.where(eq(items.libraryId, library.id));
+
+	const listCategoryLinks = userLists.length
+		? await db
+				.select()
+				.from(listCategories)
+				.where(eq(listCategories.listId, userLists[0].id))
+		: [];
+
+	return {
+		username: locals.username,
+		library: {
+			id: library.id,
+			totalUnit: library.totalUnit,
+			itemUnit: library.itemUnit,
+			currencySymbol: library.currencySymbol,
+			optionalFields: library.optionalFields,
+			updatedAt: library.updatedAt.toISOString()
+		},
+		lists: userLists.map(l => ({
+			id: l.id,
+			name: l.name,
+			isPublic: l.isPublic,
+			sortOrder: l.sortOrder
+		})),
+		categories: userCategories.map(c => ({
+			id: c.id,
+			name: c.name,
+			color: c.color,
+			sortOrder: c.sortOrder
+		})),
+		itemCount: userItems.length,
+		debug: {
+			userId: locals.userId,
+			libraryId: library.id,
+			listCount: userLists.length,
+			categoryCount: userCategories.length,
+			itemCount: userItems.length,
+			listCategoryLinkCount: listCategoryLinks.length
 		}
-
-		const result = await register({ username, email, password });
-		if ('errors' in result) return { registerError: result.errors[0].message };
-
-		cookies.set('session', result.token, { path: '/', httpOnly: true, sameSite: 'lax', maxAge: 60 * 60 * 24 * 30 });
-		throw redirect(302, '/dashboard');
-	},
-
-	signin: async ({ request, cookies }) => {
-		const data = await request.formData();
-		const username = String(data.get('username') ?? '');
-		const password = String(data.get('password') ?? '');
-
-		const result = await signin({ username, password });
-		if ('errors' in result) return { signinError: result.errors[0].message };
-
-		cookies.set('session', result.token, { path: '/', httpOnly: true, sameSite: 'lax', maxAge: 60 * 60 * 24 * 30 });
-		throw redirect(302, '/dashboard');
-	},
+	};
 };
+

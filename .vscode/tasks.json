@@ -7,6 +7,14 @@
 			"command": "git push && ssh vps1 \"cd /opt/lighterpack-ce && git pull && docker-compose build app && docker-compose up -d && docker-compose logs app --tail=5\"",
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "dev server",
+			"type": "shell",
+			"command": "npm run dev",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }

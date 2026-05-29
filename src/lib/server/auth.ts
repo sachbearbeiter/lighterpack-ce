@@ -96,7 +96,13 @@ export async function signin(input: {
 	if (!user.passwordHash)
 		return { errors: [{ field: 'password', message: 'Invalid username or password.' }] };
 
-	const valid = await verify(user.passwordHash, input.password, ARGON2_OPTIONS);
+	let valid = false;
+	try {
+		valid = await verify(user.passwordHash, input.password, ARGON2_OPTIONS);
+	} catch {
+		// Hash format incompatible (e.g. legacy bcrypt hash) — treat as wrong password
+		return { errors: [{ field: 'password', message: 'Invalid username or password.' }] };
+	}
 	if (!valid)
 		return { errors: [{ field: 'password', message: 'Invalid username or password.' }] };
 
